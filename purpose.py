@@ -1,0 +1,196 @@
+import json
+import numpy
+import pandas
+import datetime
+
+
+class ID:
+    """
+    Super class containing general ID functionalities:
+
+    name -> name of the facility that is using the ID functionalities
+    info -> dictionary containing the data that is entered during registration (id and rfid info is specified already)
+    cat_info -> specifies what data is entered into the 'info' fields that are specified as categorical
+    """
+
+    # specifies the types of data that can entered into for ID pandas dataframe
+    TYPES = {
+        "obj": object,
+        "int": "Int64",
+        "flt": numpy.float64,
+        "cat": "category"
+    }
+
+    def __init__(self, name, info={}, cat_info={}) -> None:
+        self.name = name
+        self.data, self.cat_data = self.data_manager(info=info, cat_info=cat_info)
+
+    def data_manager(self, info, cat_info):
+        """
+        Stores the info field in relevant files:
+        
+        data -> contains the ids and their requisite information
+        metadata -> contains the data names and data types
+        cat_data -> contains the data names with categorical data types and the information to be expected from them
+        """
+        common_info = {"id": "obj", "rfid": 'obj'}
+        try:
+            with open(f"{self.name}_metadata.json", 'r') as meta_file:
+                metadata = json.load(meta_file)
+        except FileNotFoundError:
+            inf = list(common_info.keys()) + list(info.keys())
+            data = pandas.DataFrame(columns=inf)
+            data.set_index("id", inplace=True)
+            data.to_csv(f"{self.name}_data.csv")
+
+            with open(f"{self.name}_metadata.json", 'w') as meta_file:
+                metadata = {**common_info, **info}
+                json.dump(metadata, meta_file)
+            
+            with open(f"{self.name}_catdata.json", 'w') as cat_file:
+                cat_data = cat_info
+                json.dump(cat_data, cat_file)
+
+        else:
+            metadata = {i: ID.TYPES[metadata[i]] for i in metadata}
+            data = pandas.DataFrame(pandas.read_csv(f"{self.name}_data.csv", dtype=metadata))
+            data.set_index("id", inplace=True)
+            with open(f"{self.name}_catdata.json", 'r') as cat_file:
+                cat_data = json.load(cat_file)
+
+        return data, cat_data
+
+    def register(self, args):
+        """Recieves a list containing the information and creates a new slot to store the data if data does not exist"""
+        try:
+            self.data.loc[args[0]]
+        except KeyError:
+            print("ID already exists.")
+        else:
+            self.data.loc[args[0]] = args[1:]
+            self.data.to_csv(f"{self.name}_data.csv")
+
+    def remove(self, indx):
+        """Removes an id from the data"""
+        self.data.drop(index=indx, inplace=True)
+        self.data.to_csv(f"{self.name}_data.csv")
+
+    def identifier(self, idntfr):
+        """Returns whether or not an ID exists inside a database or not"""
+        try:
+            self.data.loc[idntfr]
+        except KeyError:
+            return False
+        else:
+            return True
+
+
+class Access(ID):
+
+    """Based on your ID registration data"""
+    def __init__(self, name, info={}, cat_info={}, places="") -> None:
+        super().__init__(name, info, cat_info)
+        self.accss_plcs = self.access_places(places)
+        self.access_data = self.access_data_manager()
+
+    def access_places(self, places):
+        try:
+            with open(f"{self.name}_access_places.txt", 'r') as access_file:
+                access_places = list(access_file.read().split())
+        except FileNotFoundError:
+            with open(f"{self.name}_access_places.txt", 'w') as access_file:
+                access_places = places
+                access_file.write(access_places)
+        return access_places
+
+    def access_data_manager(self):
+        try:
+            with open(f"{self.name}_access_data.json", 'r') as access_file:
+                access_data = json.load(access_file)
+        except FileNotFoundError:
+            with open(f"{self.name}_access_data.json", 'w') as access_file:
+                access_data = {}
+                json.dump(access_data, access_file)
+        return access_data
+
+    def register(self, args):
+        super().register(args)
+        self.access_editor(idntfr=args[0], edit=False)
+
+    def access_editor(self, idntfr, edit=True):
+        if edit:
+            try:
+                accss_infrmtn = self.access_data[idntfr]
+            except KeyError:
+                print('ID does not exist in database.')
+            else:
+                print(accss_infrmtn)
+                self.access_data[idntfr] = input().split()
+        else:
+            self.access_data[idntfr] = input(f"{idntfr}: ").split()
+
+        with open(f"{self.name}_access_data.json", 'w') as access_file:
+            json.dump(self.access_data, access_file)
+
+    def remove(self, idntfr):
+        super().remove(idntfr)
+        self.access_data.pop(idntfr)
+        with open(f"{self.name}_access_data.json", 'w') as access_file:
+            json.dump(self.access_data, access_file)
+
+        
+class Attendance(ID):
+    def __init__(self, name, info={}, cat_info={}) -> None:
+        super().__init__(name, info, cat_info)
+        self.attend_data = self.attendance_data_manager()
+
+    def attendance_data_manager(self):
+        try:
+            attend_data = pandas.DataFrame(pandas.read_csv(f"{self.name}_attend_data.csv"))
+        except FileNotFoundError:
+            attend_data = pandas.DataFrame(columns=["entry_time", "exit_time", "id"])
+            attend_data["entry_time"] = pandas.to_datetime(attend_data["entry_time"])
+            attend_data["exit_time"] = pandas.to_datetime(attend_data["exit_time"])
+            attend_data.to_csv(f"{self.name}_attend_data.csv")
+    
+    def attendance_logger(self, idntfr):
+        if self.attend_data[self.attend_data["id"] != idntfr].empty:
+            ext = self.attend_data[self.attend_data["id"] == idntfr].iloc[-1]
+            if ext == numpy.NaN:
+                self.attend_data[ext.name, "exit_time"] = pandas.to_datetime(datetime.datetime.now())
+            else:
+                new_indx = self.attend_data.iloc[-1].name + 1
+                self.attend_data.loc[new_indx] = [pandas.to_datetime(datetime.datetime.now()), numpy.NaN, idntfr]
+        else:
+            new_indx = self.attend_data.iloc[-1].name + 1
+            self.attend_data.loc[new_indx] = [pandas.to_datetime(datetime.datetime.now()), numpy.NaN, idntfr]
+
+
+class Record(ID):
+    def __init__(self, name, info={}, cat_info={}) -> None:
+        super().__init__(name, info, cat_info)
+        self.record_data = self.record_data_manager()
+
+    def record_data_manager(self):
+        try:
+            record_data = pandas.DataFrame(pandas.read_csv(f"{self.name}_record_data.csv"))
+        except FileNotFoundError:
+            record_data = pandas.DataFrame(columns=["id", "id_file(s)"])
+            record_data.set_index("id", inplace=True)
+            record_data.to_csv(f"{self.name}_record_data.csv")
+        else:
+            record_data.set_index("date", inplace=True)
+    
+        return record_data
+
+    def record_editor(self, idntfr, edit=False):
+        if edit:
+            try:
+                rcrd_infrmtn = self.record_data[idntfr]
+            except KeyError:
+                print('ID does not exist in database.')
+            else:
+                print(rcrd_infrmtn)
+                self.rcrd_data[idntfr] = input().split()
+        else:
+            self.rcrd_data[idntfr] = input().split()
