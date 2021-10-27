@@ -1,5 +1,6 @@
 import json
 import numpy
+import os
 import pandas
 import datetime
 
@@ -23,6 +24,7 @@ class ID:
 
     def __init__(self, name, info={}, cat_info={}) -> None:
         self.name = name
+        os.mkdir(f"{self.name}")
         self.data, self.cat_data = self.data_manager(info=info, cat_info=cat_info)
 
     def data_manager(self, info, cat_info):
@@ -35,27 +37,27 @@ class ID:
         """
         common_info = {"id": "obj", "rfid": 'obj'}
         try:
-            with open(f"{self.name}_metadata.json", 'r') as meta_file:
+            with open(f"{self.name}/{self.name}_metadata.json", 'r') as meta_file:
                 metadata = json.load(meta_file)
         except FileNotFoundError:
             inf = list(common_info.keys()) + list(info.keys())
             data = pandas.DataFrame(columns=inf)
             data.set_index("id", inplace=True)
-            data.to_csv(f"{self.name}_data.csv")
+            data.to_csv(f"{self.name}/{self.name}_data.csv")
 
-            with open(f"{self.name}_metadata.json", 'w') as meta_file:
+            with open(f"{self.name}/{self.name}_metadata.json", 'w') as meta_file:
                 metadata = {**common_info, **info}
                 json.dump(metadata, meta_file)
             
-            with open(f"{self.name}_catdata.json", 'w') as cat_file:
+            with open(f"{self.name}/{self.name}_catdata.json", 'w') as cat_file:
                 cat_data = cat_info
                 json.dump(cat_data, cat_file)
 
         else:
             metadata = {i: ID.TYPES[metadata[i]] for i in metadata}
-            data = pandas.DataFrame(pandas.read_csv(f"{self.name}_data.csv", dtype=metadata))
+            data = pandas.DataFrame(pandas.read_csv(f"{self.name}/{self.name}_data.csv", dtype=metadata))
             data.set_index("id", inplace=True)
-            with open(f"{self.name}_catdata.json", 'r') as cat_file:
+            with open(f"{self.name}/{self.name}_catdata.json", 'r') as cat_file:
                 cat_data = json.load(cat_file)
 
         return data, cat_data
@@ -66,14 +68,14 @@ class ID:
             self.data.loc[args[0]]
         except KeyError:
             self.data.loc[args[0]] = args[1:]
-            self.data.to_csv(f"{self.name}_data.csv")
+            self.data.to_csv(f"{self.name}/{self.name}_data.csv")
         else:
             print("ID already exists.")            
 
     def remove(self, indx):
         """Removes an id from the data"""
         self.data.drop(index=indx, inplace=True)
-        self.data.to_csv(f"{self.name}_data.csv")
+        self.data.to_csv(f"{self.name}/{self.name}_data.csv")
 
     def identifier(self, idntfr):
         """Returns whether or not an ID exists inside a database or not"""
@@ -95,20 +97,20 @@ class Access(ID):
 
     def access_places(self, places):
         try:
-            with open(f"{self.name}_access_places.txt", 'r') as access_file:
+            with open(f"{self.name}/{self.name}_access_places.txt", 'r') as access_file:
                 access_places = list(access_file.read().split())
         except FileNotFoundError:
-            with open(f"{self.name}_access_places.txt", 'w') as access_file:
+            with open(f"{self.name}/{self.name}_access_places.txt", 'w') as access_file:
                 access_places = places
                 access_file.write(access_places)
         return access_places
 
     def access_data_manager(self):
         try:
-            with open(f"{self.name}_access_data.json", 'r') as access_file:
+            with open(f"{self.name}/{self.name}_access_data.json", 'r') as access_file:
                 access_data = json.load(access_file)
         except FileNotFoundError:
-            with open(f"{self.name}_access_data.json", 'w') as access_file:
+            with open(f"{self.name}/{self.name}_access_data.json", 'w') as access_file:
                 access_data = {}
                 json.dump(access_data, access_file)
         return access_data
@@ -129,13 +131,13 @@ class Access(ID):
         else:
             self.access_data[idntfr] = input(f"{idntfr}: ").split()
 
-        with open(f"{self.name}_access_data.json", 'w') as access_file:
+        with open(f"{self.name}/{self.name}_access_data.json", 'w') as access_file:
             json.dump(self.access_data, access_file)
 
     def remove(self, idntfr):
         super().remove(idntfr)
         self.access_data.pop(idntfr)
-        with open(f"{self.name}_access_data.json", 'w') as access_file:
+        with open(f"{self.name}/{self.name}_access_data.json", 'w') as access_file:
             json.dump(self.access_data, access_file)
 
         
@@ -146,13 +148,13 @@ class Attendance(ID):
 
     def attendance_data_manager(self):
         try:
-            attend_data = pandas.DataFrame(pandas.read_csv(f"{self.name}_attend_data.csv"))
+            attend_data = pandas.DataFrame(pandas.read_csv(f"{self.name}/{self.name}_attend_data.csv"))
         except FileNotFoundError:
             attend_data = pandas.DataFrame(columns=["time", "id", "en_ex"])
             attend_data["time"] = pandas.to_datetime(attend_data["time"])
             attend_data["en_ex"] = attend_data["en_ex"].astype('category')
             attend_data.set_index('time', inplace=True)
-            attend_data.to_csv(f"{self.name}_attend_data.csv")
+            attend_data.to_csv(f"{self.name}/{self.name}_attend_data.csv")
         else:
             attend_data["time"] = pandas.to_datetime(attend_data["time"])
             attend_data["en_ex"] = attend_data["en_ex"].astype('category')
@@ -168,7 +170,7 @@ class Attendance(ID):
                 self.attend_data.loc[pandas.Timestamp(datetime.datetime.now())] = [idntfr, 'en']
             else:
                 self.attend_data.loc[pandas.Timestamp(datetime.datetime.now())] = [idntfr, 'ex']
-        self.attend_data.to_csv(f"{self.name}_attend_data.csv")
+        self.attend_data.to_csv(f"{self.name}/{self.name}_attend_data.csv")
 
 class Record(ID):
     def __init__(self, name, info={}, cat_info={}) -> None:
@@ -177,11 +179,11 @@ class Record(ID):
 
     def record_data_manager(self):
         try:
-            record_data = pandas.DataFrame(pandas.read_csv(f"{self.name}_record_data.csv"))
+            record_data = pandas.DataFrame(pandas.read_csv(f"{self.name}/{self.name}_record_data.csv"))
         except FileNotFoundError:
             record_data = pandas.DataFrame(columns=["id", "id_files"])
             record_data.set_index("id", inplace=True)
-            record_data.to_csv(f"{self.name}_record_data.csv")
+            record_data.to_csv(f"{self.name}/{self.name}_record_data.csv")
         else:
             record_data.set_index("id", inplace=True)
     
@@ -189,8 +191,8 @@ class Record(ID):
 
     def register(self, args):
         super().register(args)
-        self.record_data.loc[args[0]] = [f'{args[0]}.txt']
-        self.record_data.to_csv(f"{self.name}_record_data.csv")
+        self.record_data.loc[args[0]] = [f'{self.name}/{self.name}_records/{args[0]}.txt']
+        self.record_data.to_csv(f"{self.name}/{self.name}_record_data.csv")
         self.record_editor(args[0], ': Created id file.')
 
     def record_editor(self, idntfr, id_data):
@@ -199,6 +201,6 @@ class Record(ID):
         except KeyError:
             print("ID is not in database.")
         else:
-            with open(self.record_data.loc[idntfr, 'id_files'], 'a') as file:
+            with open(f"{self.name}/{self.record_data.loc[idntfr, 'id_files']}", 'a') as file:
                 file.write(datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
                 file.write(id_data)
