@@ -65,10 +65,10 @@ class ID:
         try:
             self.data.loc[args[0]]
         except KeyError:
-            print("ID already exists.")
-        else:
             self.data.loc[args[0]] = args[1:]
             self.data.to_csv(f"{self.name}_data.csv")
+        else:
+            print("ID already exists.")            
 
     def remove(self, indx):
         """Removes an id from the data"""
@@ -148,23 +148,27 @@ class Attendance(ID):
         try:
             attend_data = pandas.DataFrame(pandas.read_csv(f"{self.name}_attend_data.csv"))
         except FileNotFoundError:
-            attend_data = pandas.DataFrame(columns=["entry_time", "exit_time", "id"])
-            attend_data["entry_time"] = pandas.to_datetime(attend_data["entry_time"])
-            attend_data["exit_time"] = pandas.to_datetime(attend_data["exit_time"])
+            attend_data = pandas.DataFrame(columns=["time", "id", "en_ex"])
+            attend_data["time"] = pandas.to_datetime(attend_data["time"])
+            attend_data["en_ex"] = attend_data["en_ex"].astype('category')
+            attend_data.set_index('time', inplace=True)
             attend_data.to_csv(f"{self.name}_attend_data.csv")
+        else:
+            attend_data["time"] = pandas.to_datetime(attend_data["time"])
+            attend_data["en_ex"] = attend_data["en_ex"].astype('category')
+            attend_data.set_index('time', inplace=True)
+
+        return attend_data
     
     def attendance_logger(self, idntfr):
-        if self.attend_data[self.attend_data["id"] != idntfr].empty:
-            ext = self.attend_data[self.attend_data["id"] == idntfr].iloc[-1]
-            if ext == numpy.NaN:
-                self.attend_data[ext.name, "exit_time"] = pandas.to_datetime(datetime.datetime.now())
-            else:
-                new_indx = self.attend_data.iloc[-1].name + 1
-                self.attend_data.loc[new_indx] = [pandas.to_datetime(datetime.datetime.now()), numpy.NaN, idntfr]
+        if self.attend_data[self.attend_data['id'] == idntfr].empty:
+            self.attend_data.loc[pandas.Timestamp(datetime.datetime.now())] = [idntfr, 'en']
         else:
-            new_indx = self.attend_data.iloc[-1].name + 1
-            self.attend_data.loc[new_indx] = [pandas.to_datetime(datetime.datetime.now()), numpy.NaN, idntfr]
-
+            if self.attend_data[self.attend_data['id'] == idntfr].iloc[-1]['en_ex'] == 'ex':
+                self.attend_data.loc[pandas.Timestamp(datetime.datetime.now())] = [idntfr, 'en']
+            else:
+                self.attend_data.loc[pandas.Timestamp(datetime.datetime.now())] = [idntfr, 'ex']
+        self.attend_data.to_csv(f"{self.name}_attend_data.csv")
 
 class Record(ID):
     def __init__(self, name, info={}, cat_info={}) -> None:
@@ -175,22 +179,26 @@ class Record(ID):
         try:
             record_data = pandas.DataFrame(pandas.read_csv(f"{self.name}_record_data.csv"))
         except FileNotFoundError:
-            record_data = pandas.DataFrame(columns=["id", "id_file(s)"])
+            record_data = pandas.DataFrame(columns=["id", "id_files"])
             record_data.set_index("id", inplace=True)
             record_data.to_csv(f"{self.name}_record_data.csv")
         else:
-            record_data.set_index("date", inplace=True)
+            record_data.set_index("id", inplace=True)
     
         return record_data
 
-    def record_editor(self, idntfr, edit=False):
-        if edit:
-            try:
-                rcrd_infrmtn = self.record_data[idntfr]
-            except KeyError:
-                print('ID does not exist in database.')
-            else:
-                print(rcrd_infrmtn)
-                self.rcrd_data[idntfr] = input().split()
+    def register(self, args):
+        super().register(args)
+        self.record_data.loc[args[0]] = [f'{args[0]}.txt']
+        self.record_data.to_csv(f"{self.name}_record_data.csv")
+        self.record_editor(args[0], ': Created id file.')
+
+    def record_editor(self, idntfr, id_data):
+        try:
+            self.record_data.loc[idntfr]
+        except KeyError:
+            print("ID is not in database.")
         else:
-            self.rcrd_data[idntfr] = input().split()
+            with open(self.record_data.loc[idntfr, 'id_files'], 'a') as file:
+                file.write(datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
+                file.write(id_data)
