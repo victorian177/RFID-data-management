@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -23,13 +22,15 @@
     </div>
 
     <div class=" container bg-light" style="min-height: 200px;">
-        <div class="mb-3 col-sm-6">
-            <label for="facility" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Facility:</label>
-            <input type="text" id="facility" class="form-control ms-5">
-        </div>
-        <div class="col-sm-12 text-center">
-            <button class="btn btn-outline-secondary mt-4 text-center" type="submit">Submit</button>
-        </div>
+        <form action="data">
+            <div class="mb-3 col-sm-6">
+                <label for="facility" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Facility:</label>
+                <input type="text" id="facility" name="facility" class="form-control ms-5">
+            </div>
+            <div class="col-sm-12 text-center">
+                <input class="btn btn-outline-secondary mt-4 text-center" value="Submit" type="submit">
+            </div>
+        </form>
     </div>
 </body>
 </html>

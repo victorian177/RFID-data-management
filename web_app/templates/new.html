@@ -23,7 +23,7 @@
     </div>
 
     <div class=" container bg-light" style="min-height: 500px;">
-        <form action="">
+        <form action="data">
             <div class="mb-3 col-sm-6">
                 <label for="facility" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Facility:</label>
                 <input type="text" id="facility" class="form-control ms-5">
@@ -37,26 +37,13 @@
                     {%endfor%}
                 </datalist>
             </div>
-            <form action="">
-                <div class="col-sm-6">
-                    <label for="data" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Data:</label>
-                    <input type="text" id="data" class="form-control ms-5 mb-2">
-                    <input class="form-control ms-5" list="datalistOptions" id="DataList" placeholder="Type to search..." >
-                    <datalist id="datalistOptions">
-                        <option value="San Francisco">
-                        <option value="New York">
-                        <option value="Seattle">
-                        <option value="Los Angeles">
-                        <option value="Chicago">
-                    </datalist>
-                </div>
-                <div class="col-sm-12 text-center">
-                    <button class="btn btn-outline-secondary mt-4 text-center" type="submit">Submit</button>
-                </div>
-                <div class="col-sm-12 text-center">
-                    <button class="btn btn-outline-dark mt-3 text-center" type="submit">Finish</button>
-                </div>
-            </form>
+            <div class="col-sm-6">
+                <label for="data" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Data:</label>
+                <textarea class="form-control ms-5" id="text" name="data" placeholder="Enter text..."></textarea>
+            </div>
+            <div class="col-sm-12 text-center">
+                <input class="btn btn-outline-secondary mt-4 text-center" value="Submit" type="submit">
+            </div>
         </form>
     </div>
 </body>
