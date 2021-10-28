@@ -1,5 +1,5 @@
-from flask import Flask
-from flask import render_template
+from flask import Flask, render_template, request
+import purpose
 
 app = Flask(__name__)
 
@@ -9,16 +9,15 @@ def landing_page():
 
 @app.route('/new')
 def new():
-    data = {}
     return render_template("new.html", use_cases=["Access", "Attendance", "Record"])
 
 @app.route('/existing')
 def existing():
     return render_template("existing.html")
 
-@app.route('/data')
+@app.route('/data', methods=["GET", "POST"])
 def data():
-    return render_template("data.html")
+    return render_template("data.html", facility=request.args["facility"])
 
 @app.route('/register')
 def register():
