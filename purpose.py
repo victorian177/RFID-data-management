@@ -204,3 +204,4 @@ class Record(ID):
             with open(f"{self.name}/{self.record_data.loc[idntfr, 'id_files']}", 'a') as file:
                 file.write(datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
                 file.write(id_data)
+

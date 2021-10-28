@@ -9,7 +9,8 @@ def landing_page():
 
 @app.route('/new')
 def new():
-    return render_template("new.html")
+    data = {}
+    return render_template("new.html", use_cases=["Access", "Attendance", "Record"])
 
 @app.route('/existing')
 def existing():
@@ -29,7 +30,7 @@ def remove():
 
 @app.route('/run')
 def run():
-    return render_template("run.html")
+  return render_template("run.html")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True, port="8080")

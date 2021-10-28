@@ -1,0 +1,2 @@
+language = "python3 html"
+run = "python web_app/main.py html web_app/templates/data.html web_app/templates/existing.html web_app/templates/landing_page.html web_app/templates/new.html web_app/templates/register.html web_app/templates/remove.html web_app/templates/run.html"
