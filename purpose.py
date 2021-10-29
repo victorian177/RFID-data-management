@@ -23,8 +23,11 @@ class ID:
     }
 
     def __init__(self, name, info={}, cat_info={}) -> None:
-        self.name = name
-        os.mkdir(f"{self.name}")
+        self.name = name        
+        try:
+            os.mkdir(f"{self.name}")
+        except FileExistsError:
+            pass
         self.data, self.cat_data = self.data_manager(info=info, cat_info=cat_info)
 
     def data_manager(self, info, cat_info):

@@ -10,7 +10,7 @@
 <body>
     <nav class="navbar navbar-light bg-light">
         <div class="container justify-content-center">
-          <a class="navbar-brand" href="#">
+          <a class="navbar-brand" href="/">
             <img src="static/images/logo.png">
           </a>
         </div>
@@ -23,14 +23,14 @@
     </div>
 
     <div class=" container bg-light" style="min-height: 500px;">
-        <form action="data">
+        <form action="data" method="post">
             <div class="mb-3 col-sm-6">
                 <label for="facility" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Facility:</label>
-                <input type="text" id="facility" class="form-control ms-5">
+                <input type="text" id="facility" name="facility" class="form-control ms-5" required>
             </div>
             <div class="mb-3 col-sm-6">
-                <label for="use-case" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Use Case:</label>
-                <input class="form-control ms-5" list="datalistOptions" id="use-case" placeholder="Type to search..." >
+                <label for="use_case" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Use Case:</label>
+                <input class="form-control ms-5" list="datalistOptions" id="use_case" name="use_case" placeholder="Type to search..." required>
                 <datalist id="datalistOptions">
                     {%for i in use_cases%}
                         <option value={{ i }}>
@@ -39,7 +39,7 @@
             </div>
             <div class="col-sm-6">
                 <label for="data" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Data:</label>
-                <textarea class="form-control ms-5" id="text" name="data" placeholder="Enter text..."></textarea>
+                <textarea class="form-control ms-5" id="text" name="data" placeholder="Enter text..." required></textarea>
             </div>
             <div class="col-sm-12 text-center">
                 <input class="btn btn-outline-secondary mt-4 text-center" value="Submit" type="submit">
