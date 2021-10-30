@@ -1,7 +1,7 @@
 import sys
 sys.path.append("C:/Users/Victor Momodu/Documents/Programming/Arduino/Code/RFID-data-management")
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, session, request
 import purpose
 import json
 
@@ -26,6 +26,7 @@ def data():
         form_data = request.form["data"]
     except KeyError:
         facility = request.form["facility"]
+        active(facility)
         result = facility_data_findr(facility, existing=True)
         if result[facility][:5] == "Error":
             return render_template("error.html", error=result[facility])
@@ -35,6 +36,7 @@ def data():
             return render_template("data.html", facility=facility, use_case=result[facility], dataframe=dataframe)
     else:       
         facility = request.form["facility"]
+        active(facility)
         result = facility_data_findr(facility, use_case=use_case)
         if result[facility][:5] == "Error":
             return render_template("error.html", error=result[facility])
@@ -43,9 +45,24 @@ def data():
             dataframe = instance.data
             return render_template("data.html", facility=facility, use_case=result[facility], dataframe=dataframe)
 
-@app.route('/register')
+@app.route('/register', methods=["GET", "POST"])
 def register():
-    return render_template("register.html")
+    name = active()
+    result = facility_data_findr(name, existing=True)
+    instance = purpose_pickr(name, result[name])
+    dataframe = instance.data
+    args = []
+    try:
+        idntfr = request.form["id"]
+    except KeyError:
+        pass
+    else:
+        args.append(idntfr)
+        for i in dataframe.columns:
+            args.append(request.form[i])
+        print(args)
+        instance.register(args=args)
+    return render_template("register.html", name=name, use_case=result[name], dataframe=dataframe)
 
 @app.route('/remove')
 def remove():
@@ -89,6 +106,21 @@ def facility_data_findr(name, use_case="", existing=False):
             else:
                 return {name: "Error: instance of this facililty exists in our database. Try using another name."}
 
+def active(name=''):
+    if name == '':
+        try:
+            with open("active.txt", 'r') as active:
+                active_file = active.read()
+        except FileNotFoundError:
+            with open("active.txt", 'w') as active:
+                active.write(name)
+            return name
+        else:
+            return active_file
+    else:
+        with open("active.txt", 'w') as active:
+                active.write(name)
+
 def purpose_pickr(name, use_case, data=None):
     TYPES = {
         's': "obj",
@@ -105,7 +137,7 @@ def purpose_pickr(name, use_case, data=None):
         for i in data:
             fields = i.split(": ")[-1]
             for j in fields.split(", "):
-                if TYPES[i.split(": ")[0]] == 'c':
+                if TYPES[i.split(": ")[0]] == "cat":
                     cat_info[j.split('|')[0]] = j.split('|')[1:]
                     info[j.split('|')[0]] = TYPES[i.split(": ")[0]]
                 else:

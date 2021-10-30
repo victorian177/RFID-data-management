@@ -178,6 +178,10 @@ class Attendance(ID):
 class Record(ID):
     def __init__(self, name, info={}, cat_info={}) -> None:
         super().__init__(name, info, cat_info)
+        try:
+            os.mkdir(f"{self.name}/{self.name}_records")
+        except FileExistsError:
+            pass
         self.record_data = self.record_data_manager()
 
     def record_data_manager(self):
@@ -202,9 +206,17 @@ class Record(ID):
         try:
             self.record_data.loc[idntfr]
         except KeyError:
-            print("ID is not in database.")
+            pass
         else:
-            with open(f"{self.name}/{self.record_data.loc[idntfr, 'id_files']}", 'a') as file:
-                file.write(datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
-                file.write(id_data)
+            try:
+                with open(f"{self.record_data.loc[idntfr, 'id_files']}", 'r') as file:
+                    file.read()
+            except FileNotFoundError:
+                with open(f"{self.record_data.loc[idntfr, 'id_files']}", 'w') as file:
+                    file.write(datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
+                    file.write(id_data)
+            else:
+                with open(f"{self.record_data.loc[idntfr, 'id_files']}", 'a') as file:
+                    file.write(datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
+                    file.write(id_data)
 
