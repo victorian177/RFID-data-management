@@ -1,21 +1,12 @@
-TYPES = {
-        's': "obj",
-        'i': "int",
-        'c': "cat"
-    }
+import pandas
 
-data = ["s: First Name, Last Name", "i: Age", "c: Sex|Male|Female"]
+d = {
+    "first": ["Victor", "Jill", "Parker"],
+    "last": ["Gerson", "Patterson", "Bridgerton"],
+    "id": ["A12", "B30", "C49"],
+}
+a = pandas.DataFrame(d)
+a.set_index('id', inplace=True)
+a.drop(index="A12", inplace=True)
 
-info = {}
-cat_info = {}
-
-if True:
-    for i in data:
-        fields = i.split(": ")[-1]
-        for j in fields.split(", "):
-            if TYPES[i.split(": ")[0]] == "cat":
-                cat_info[j.split('|')[0]] = j.split('|')[1:]
-                info[j.split('|')[0]] = TYPES[i.split(": ")[0]]
-            else:
-                info[j] = TYPES[i.split(": ")[0]]
-print(info, cat_info)
+print(a)

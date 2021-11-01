@@ -50,7 +50,6 @@ def register():
     name = active()
     result = facility_data_findr(name, existing=True)
     instance = purpose_pickr(name, result[name])
-    dataframe = instance.data
     args = []
     try:
         idntfr = request.form["id"]
@@ -58,15 +57,24 @@ def register():
         pass
     else:
         args.append(idntfr)
-        for i in dataframe.columns:
+        for i in instance.data.columns:
             args.append(request.form[i])
         print(args)
         instance.register(args=args)
-    return render_template("register.html", name=name, use_case=result[name], dataframe=dataframe)
+    return render_template("register.html", name=name, use_case=result[name], dataframe=instance.data)
 
-@app.route('/remove')
+@app.route('/remove', methods=["GET", "POST"])
 def remove():
-    return render_template("remove.html")
+    name = active()
+    result = facility_data_findr(name, existing=True)
+    instance = purpose_pickr(name, result[name])
+    try:
+        idntfr = request.form["id"]
+    except KeyError:
+        pass
+    else:
+        instance.remove(idntfr)
+    return render_template("remove.html", name=name, use_case=result[name], dataframe=instance.data)
 
 @app.route('/run')
 def run():

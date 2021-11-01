@@ -77,7 +77,7 @@ class ID:
 
     def remove(self, indx):
         """Removes an id from the data"""
-        self.data.drop(index=indx, inplace=True)
+        self.data.drop(index=indx, inplace=True, errors="ignore")
         self.data.to_csv(f"{self.name}/{self.name}_data.csv")
 
     def identifier(self, idntfr):
