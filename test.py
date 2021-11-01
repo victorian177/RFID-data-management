@@ -1,45 +1,21 @@
-import json
-# # import os
-# import purpose
+TYPES = {
+        's': "obj",
+        'i': "int",
+        'c': "cat"
+    }
 
-# infrmtn = {'f_name': "obj", 'l_name': "obj", 'sex': "cat", 'position': "obj"}
-# cat_inf = {"sex": ['male', "female"]}
+data = ["s: First Name, Last Name", "i: Age", "c: Sex|Male|Female"]
 
-# persons = [
-#     ["A18", "059849", "Jason", "Sudeikis", "male", "Lead Actor"],
-#     ["B02", "330939", "Hannah", "Waddingham", "female", "Supporting Actor"],
-#     ["C30", "347863", "Jeremy", "Swift", "male", "Supporting Actor"],
-#     ["D49", "489235", "Sarah", "Niles", "female", "Supporting Actor"],
-#     ["E45", "053849", "Toheeb", "Jimoh", "male", "Guest Actor"],
-#     ["F76", "637833", "Stephanie", "Manas", "female", "Extra Actor"]
-#     ]
+info = {}
+cat_info = {}
 
-# office = purpose.Access('office')
-# for i in persons:
-#     office.register(i)
-
-# office.remove("A18")
-# office.access_editor("B02")
-
-# school = purpose.Attendance("school")
-# for i in persons:
-#     school.register(i)
-
-# for i in persons:
-#     school.attendance_logger(i[0])
-
-# centre = purpose.Record("centre", infrmtn, cat_inf)
-# for i in persons:
-#     centre.register(i)
-
-# for i in persons:
-#     centre.record_editor(i[0], "Just testing this out if this works")
-try:
-    with open("facility_data.json", 'r') as f:
-        file = json.load(f)
-except json.decoder.JSONDecodeError:
-    print("Yes")
-
-# s: First Name, Last Name
-# i: Age
-# c: Sex|Male|Female
+if True:
+    for i in data:
+        fields = i.split(": ")[-1]
+        for j in fields.split(", "):
+            if TYPES[i.split(": ")[0]] == "cat":
+                cat_info[j.split('|')[0]] = j.split('|')[1:]
+                info[j.split('|')[0]] = TYPES[i.split(": ")[0]]
+            else:
+                info[j] = TYPES[i.split(": ")[0]]
+print(info, cat_info)
