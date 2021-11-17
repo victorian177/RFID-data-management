@@ -1,9 +1,33 @@
+from logging import debug
 import sys
 sys.path.append("C:/Users/Victor Momodu/Documents/Programming/Arduino/Code/RFID-data-management")
 
-from flask import Flask, render_template, request, jsonify
-import purpose
+from flask import Flask, render_template, request
 import json
+import purpose
+import serial
+import serial.tools.list_ports
+import threading
+
+def rfid_threader():
+    def srl(result, index):
+        serial_instance = serial.Serial(port="COM8", baudrate=9600)
+        while True:
+            if serial_instance.inWaiting():
+                packet = serial_instance.readline()
+                data = packet.decode("ascii")
+            result[index] = data
+            
+    thread = [None]
+    result = [None]
+
+    thread[0] = threading.Thread(target=srl, daemon=True, args=(result, 0))
+    thread[0].start()
+
+    thread[0].join()
+    data = " ".join(result)
+
+    return data
 
 app = Flask(__name__)
 
