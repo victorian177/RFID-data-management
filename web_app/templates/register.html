@@ -31,6 +31,11 @@
                     <label for="{{i}}" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">{{i}}:</label>
                     <input type="text" id="{{i}}" name="{{i}}" class="form-control ms-5">
                 {%endfor%}
+                {%if use_case == "Access"%}
+                    <p class="mt-4" style="font-family: 'Courier New', Courier, monospace">{{places}}</p>
+                    <label for="places" class="form-label ms-5" style="font-family: 'Courier New', Courier, monospace">Places:</label>
+                    <textarea class="form-control ms-5" id="places" name="places" placeholder="Enter text..." required></textarea>
+                {%endif%}
             </div>
             <div class="col-sm-12 text-center">
                 <input class="btn btn-outline-secondary mt-4 mb-5 text-center" value="Submit" type="submit">

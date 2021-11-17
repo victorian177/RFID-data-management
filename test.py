@@ -1,12 +1,21 @@
-import pandas
+def foo(result, index):
+    # print('hello {0}'.format(bar))
+    
+    result[index] = "foo"
 
-d = {
-    "first": ["Victor", "Jill", "Parker"],
-    "last": ["Gerson", "Patterson", "Bridgerton"],
-    "id": ["A12", "B30", "C49"],
-}
-a = pandas.DataFrame(d)
-a.set_index('id', inplace=True)
-a.drop(index="A12", inplace=True)
+from threading import Thread
 
-print(a)
+threads = [None]
+results = [None]
+
+for i in range(len(threads)):
+    threads[i] = Thread(target=foo, args=(results, i))
+    threads[i].start()
+
+# do some other stuff
+
+for i in range(len(threads)):
+    threads[i].join()
+
+a = " ".join(results)
+print(len(a))

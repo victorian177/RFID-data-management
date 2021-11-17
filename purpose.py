@@ -98,7 +98,7 @@ class Access(ID):
         self.accss_plcs = self.access_places(places)
         self.access_data = self.access_data_manager()
 
-    def access_places(self, places):
+    def access_places(self, places=""):
         try:
             with open(f"{self.name}/{self.name}_access_places.txt", 'r') as access_file:
                 access_places = list(access_file.read().split())
@@ -118,24 +118,28 @@ class Access(ID):
                 json.dump(access_data, access_file)
         return access_data
 
-    def register(self, args):
+    def register(self, args, place_data):
         super().register(args)
-        self.access_editor(idntfr=args[0], edit=False)
+        self.access_editor(idntfr=args[0], place_data=place_data, edit=False)
 
-    def access_editor(self, idntfr, edit=True):
+    def access_editor(self, idntfr, place_data, edit=True):
         if edit:
             try:
-                accss_infrmtn = self.access_data[idntfr]
+                self.access_data[idntfr]
             except KeyError:
                 print('ID does not exist in database.')
             else:
-                print(accss_infrmtn)
-                self.access_data[idntfr] = input().split()
+                self.access_data[idntfr] = place_data.split()
         else:
-            self.access_data[idntfr] = input(f"{idntfr}: ").split()
+            self.access_data[idntfr] = place_data.split()
 
         with open(f"{self.name}/{self.name}_access_data.json", 'w') as access_file:
             json.dump(self.access_data, access_file)
+
+    def access_checkr(self, idntfr, place):
+        if place in self.access_data[idntfr]:
+            return True
+        return False
 
     def remove(self, idntfr):
         super().remove(idntfr)
